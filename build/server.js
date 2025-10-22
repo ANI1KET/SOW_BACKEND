@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prismaClient = void 0;
+const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const env_variable_1 = require("./env_variable");
@@ -13,6 +14,11 @@ const app = (0, express_1.default)();
 exports.prismaClient = new client_1.PrismaClient({
     log: ["query"],
 });
+app.use((0, cors_1.default)({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use("/api", rootRouter_1.default);

@@ -23,39 +23,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.me = exports.login = exports.signUp = void 0;
-const bcrypt_1 = require("bcrypt");
+exports.login = exports.signUp = void 0;
 const jwt = __importStar(require("jsonwebtoken"));
+const bcrypt_1 = require("bcrypt");
 const server_1 = require("../server");
 const env_variable_1 = require("../env_variable");
-const bad_requests_1 = require("../exceptions/bad_requests");
 const errorhandler_1 = require("../exceptions/errorhandler");
 const uers_1 = require("../schemas/uers");
 const not_found_1 = require("../exceptions/not_found");
+const bad_requests_1 = require("../exceptions/bad_requests");
 const signUp = async (req, res, next) => {
-    // try {
     uers_1.SignupSchema.parse(req.body);
-    const { email, name, password } = req.body;
+    const { email, password } = req.body;
     let user = await server_1.prismaClient.user.findFirst({ where: { email } });
     if (user)
         throw new bad_requests_1.BadRequestsException("User already exist", errorhandler_1.ErrorCode.USER_ALREADY_EXIST);
     user = await server_1.prismaClient.user.create({
         data: {
-            name,
             email,
-            password: (0, bcrypt_1.hashSync)(password, 10),
+            password_hash: (0, bcrypt_1.hashSync)(password, 10),
         },
     });
     res.status(201).json(user);
-    //   } catch (error: any) {
-    //     return next(
-    //       new UnprocessableEntity(
-    //         error?.issues,
-    //         "Unprocessable Entity",
-    //         ErrorCode.UNPROCESSABLE_ENTITY
-    //       )
-    //     );
-    //   }
 };
 exports.signUp = signUp;
 const login = async (req, res, next) => {
@@ -64,15 +53,11 @@ const login = async (req, res, next) => {
     let user = await server_1.prismaClient.user.findFirst({ where: { email } });
     if (!user)
         throw new not_found_1.NotFoundException("User does not exist", errorhandler_1.ErrorCode.USER_NOT_FOUND);
-    if (!(0, bcrypt_1.compareSync)(password, user.password))
+    if (!(0, bcrypt_1.compareSync)(password, user.password_hash))
         throw new not_found_1.NotFoundException("Incorrect email or password", errorhandler_1.ErrorCode.INCORRECT_EMAIL_PASSWORD);
     const token = jwt.sign({
         userId: user.id,
-    }, env_variable_1.JWT_SECRET);
+    }, env_variable_1.JWT_SECRET, { expiresIn: "1d" });
     res.status(201).json({ user, token });
 };
 exports.login = login;
-const me = async (req, res, next) => {
-    res.status(200).json(req.user);
-};
-exports.me = me;
