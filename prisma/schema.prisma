@@ -32,10 +32,10 @@ model Text {
 
 model Pricelist {
   id          String @id @default(uuid())
-  unit        Int
+  unit        String
   name        String
   price       String
-  in_stock    Int
+  in_stock    String
   in_price    String
   description String
 
