@@ -29,3 +29,17 @@ model Text {
 
   @@map("Texts")
 }
+
+model Pricelist {
+  id          String @id @default(uuid())
+  unit        Int
+  name        String
+  price       String
+  in_stock    Int
+  in_price    String
+  description String
+
+  created_at DateTime @default(now())
+
+  @@map("Pricelists")
+}
